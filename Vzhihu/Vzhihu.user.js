@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知乎新版添加快捷键
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  为新版知乎添加快捷键
 // @author       You
 // @match        *://www.zhihu.com/question/*
