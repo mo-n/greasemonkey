@@ -19,15 +19,20 @@
 
     const listItems = document.getElementsByClassName('List-item');
 
+    function setSelectId(value){
+      const newId = Number(value);
+      if (isNaN(newId)) return;
+      return selectId = newId;
+    }
     function showColor(e){
       var element = e.target;
-      selectId = parents(element);
+      setSelectId(parents(element));
     }
 
     function parents(element){
       var parent = element.parentNode;
       if(!parent){
-        return;
+        return NaN;
       }
       if(!parent.className || parent.className !== 'List-item'){
         return parents(parent);
@@ -48,14 +53,14 @@
     function nextItem() {
       var length = listItems.length-1;
       if(selectId !== length){
-        selectId++;
+        setSelectId(selectId + 1);
       }
       setLocation(selectId);
     }
 
     function previousItem() {
       if(selectId !== 0){
-        selectId--;
+        setSelectId(selectId - 1);
       }
       setLocation(selectId);
     }
@@ -65,13 +70,13 @@
       gFlag++;
       if(gFlag === 2){
         gFlag = 0;
-        selectId = 0;
+        setSelectId(0);
         setLocation(selectId);
       }
     }
 
     function lastItem(){
-      selectId = listItems.length - 1;
+      setSelectId(listItems.length - 1);
       setLocation(selectId);
     }
 
