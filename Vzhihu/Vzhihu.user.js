@@ -1,57 +1,97 @@
 // ==UserScript==
 // @name         知乎新版添加快捷键
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      1.0
 // @description  为新版知乎添加快捷键
 // @author       You
-// @match        *://www.zhihu.com/question/*
+// @match        *://www.zhihu.com/*
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
-    let selectId=0;
-    let gFlag = 0, scFlag = 0, fxFlag = 0;
-    // add hotkey
+    let selectId = 0;
+    let gFlag = false, scFlag = false, fxFlag = false;
+    let listItems;
+    const answerClass = getAnswerClass();
+    // add hotkey event
     document.onkeydown = hotkey;
-    const list = document.getElementsByClassName('List')[0];
-    list.addEventListener('mouseover',showColor,true);
+    const mainTag = document.getElementsByTagName("main")[0];
+    mainTag.addEventListener('mouseover', mouseoverEvent, true);
+    const observer = new MutationObserver(setAnswersitems);
+    observer.observe(mainTag, { childList: true, subtree: true });
 
-    const listItems = document.getElementsByClassName('List-item');
+    function setAnswersitems() {
+      let items;
+      items = document.querySelectorAll(`.${answerClass}`);
+      if(!items) return -1;
+      listItems = items;
+    }
 
     function setSelectId(value){
       const newId = Number(value);
       if (isNaN(newId)) return;
-      return selectId = newId;
+      selectId = newId;
     }
-    function showColor(e){
-      var element = e.target;
+
+    function getAnswerClass() {
+      if(/^(http|https):\/\/www.zhihu.com(\/)?$/.test(window.location.href)) { // 匹配主页
+        return 'TopstoryItem';
+      }
+      else if (/^(http|https):\/\/www.zhihu.com\/question\/*/.test(window.location.href)) { //匹配问题页面
+        return 'AnswerItem';
+      }
+    }
+
+    function mouseoverEvent(e){
+      let element = e.target;
       setSelectId(parents(element));
     }
 
     function parents(element){
-      var parent = element.parentNode;
-      if(!parent){
+      let parent = element.parentNode;
+      if(!parent || !listItems) {
         return NaN;
       }
-      if(!parent.className || parent.className !== 'List-item'){
+      if(!parent.className || !parent.className.includes(answerClass)){
         return parents(parent);
       }
-
       return Array.from(listItems).findIndex(elm=>elm === parent
       );
     }
 
     function findAnswers(count) {
+      if(!listItems) {
+        setAnswersitems();
+      }
       return listItems[count];
     }
 
+    function answersCount() {
+      if(!listItems) {
+        setAnswersitems();
+      }
+      return listItems.length-1;
+    }
+
+　　function getElementTop(element){
+      let actualTop = element.offsetTop;
+      let current = element.offsetParent;
+      while (current !== null){
+        actualTop += current.offsetTop;
+        current = current.offsetParent;
+      }
+      return actualTop;
+　　}
+
     function setLocation(id) {
-      window.scrollTo(0, listItems[id].offsetTop-53);
+      let element = findAnswers(id);
+      const elementTop = getElementTop(element);
+      window.scrollTo(0, elementTop-70);
     }
 
     function nextItem() {
-      var length = listItems.length-1;
+      let length = answersCount();
       if(selectId !== length){
         setSelectId(selectId + 1);
       }
@@ -67,28 +107,28 @@
 
     function firstItem()
     {
-      gFlag++;
-      if(gFlag === 2){
-        gFlag = 0;
+      if(gFlag){
+        gFlag = false;
         setSelectId(0);
         setLocation(selectId);
       }
+      gFlag = true;
     }
 
     function lastItem(){
-      setSelectId(listItems.length - 1);
+      setSelectId(answersCount());
       setLocation(selectId);
     }
 
     function voteButtonUp() {
-      var answers = findAnswers(selectId);
-      var voteButton = answers.getElementsByClassName('VoteButton--up')[0];
+      let answers = findAnswers(selectId);
+      let voteButton = answers.getElementsByClassName('VoteButton--up')[0];
       voteButton.click();
     }
 
     function voteButtonDown() {
-      var answers = findAnswers(selectId);
-      var voteButton = answers.getElementsByClassName('VoteButton--down')[0];
+      let answers = findAnswers(selectId);
+      let voteButton = answers.getElementsByClassName('VoteButton--down')[0];
       voteButton.click();
     }
 
@@ -100,46 +140,48 @@
 
     function openComment()
     {
-      var answers = findAnswers(selectId);
-      var comment = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[1];
+      let answers = findAnswers(selectId);
+      let comment = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[1];
       comment.click();
     }
 
     function thank()
     {
-      var answers = findAnswers(selectId);
-      var thinkButton = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[4];
+      let answers = findAnswers(selectId);
+      let thinkButton = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[4];
       thinkButton.click();
     }
 
     function collection()
     {
-      var answers = findAnswers(selectId);
-      var thinkButton = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[3];
+      let answers = findAnswers(selectId);
+      let thinkButton = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[3];
       thinkButton.click();
     }
 
     function share()
     {
-      var answers = findAnswers(selectId);
-      var share = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[2];
-      var button = share.getElementsByTagName('button')[0];
+      let answers = findAnswers(selectId);
+      let share = answers.getElementsByClassName('ContentItem-actions')[0].childNodes[2];
+      let button = share.getElementsByTagName('button')[0];
       button.click();
     }
 
     function hotkey()
     {
-      if(window.event.key=='s') {
-        scFlag = 1;
-      } else if(window.event.key=='f') {
-        fxFlag = 1;
-      } else if(scFlag == 1 && window.event.key=='c') {
+      if(window.event.altKey || window.event.ctrlKey) return;
+
+      if(window.event.key =='s') {
+        scFlag = true;
+      } else if(window.event.key =='f') {
+        fxFlag = true;
+      } else if(scFlag && window.event.key=='c') {
+        scFlag = fxFlag = false;
         collection();
-        scFlag = fxFlag = 0;
         return;
-      } else if(fxFlag == 1 && window.event.key=='x') {
+      } else if(fxFlag && window.event.key=='x') {
+        scFlag = fxFlag = false;
         share();
-        scFlag = fxFlag = 0;
         return;
       }
       else {
