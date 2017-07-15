@@ -44,8 +44,12 @@
     }
 
     function mouseoverEvent(e){
+      mainTag.removeEventListener('mouseover', mouseoverEvent, true);
       let element = e.target;
       setSelectId(parents(element));
+      setTimeout(function() {
+        mainTag.addEventListener('mouseover', mouseoverEvent, true);
+      }, 3000);
     }
 
     function parents(element){
