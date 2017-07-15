@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知乎新版添加快捷键
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  为新版知乎添加快捷键
 // @author       You
 // @match        *://www.zhihu.com/*
@@ -12,14 +12,30 @@
     'use strict';
     let selectId = 0;
     let gFlag = false, scFlag = false, fxFlag = false;
-    let listItems;
-    const answerClass = getAnswerClass();
-    // add hotkey event
-    document.onkeydown = hotkey;
-    const mainTag = document.getElementsByTagName("main")[0];
-    mainTag.addEventListener('mouseover', mouseoverEvent, true);
     const observer = new MutationObserver(setAnswersitems);
-    observer.observe(mainTag, { childList: true, subtree: true });
+    let listItems;
+    let mainTag;
+    let answerClass;
+    document.onkeydown = hotkey;
+    // add hotkey event
+    setInterval(addEvent, 500);
+
+    function addEvent() {
+      answerClass = getAnswerClass();
+      if (mainTag) {
+        mainTag.removeEventListener('mouseover', mouseoverEvent, true);
+        observer.disconnect();
+      }
+      if(/^(http|https):\/\/www.zhihu.com(\/)?$/.test(window.location.href)) { // 匹配主页
+        mainTag = document.querySelector('.TopstoryMain > div');
+      } else if (/^(http|https):\/\/www.zhihu.com\/question\/(\d)+\/answer\/*/.test(window.location.href)) { //匹配单个问题页面
+        mainTag = document.querySelector('.Question-mainColumn');
+      } else if(/^(http|https):\/\/www.zhihu.com\/question\/*/.test(window.location.href)) {
+        mainTag = document.querySelector('.List-item').parentElement;
+      }
+      mainTag.addEventListener('mouseover', mouseoverEvent, true);
+      observer.observe(mainTag, { childList: true });
+    }
 
     function setAnswersitems() {
       let items;
@@ -49,7 +65,7 @@
       setSelectId(parents(element));
       setTimeout(function() {
         mainTag.addEventListener('mouseover', mouseoverEvent, true);
-      }, 3000);
+      }, 500);
     }
 
     function parents(element){
@@ -60,8 +76,13 @@
       if(!parent.className || !parent.className.includes(answerClass)){
         return parents(parent);
       }
-      return Array.from(listItems).findIndex(elm=>elm === parent
+      const id =  Array.from(listItems).findIndex(elm=>elm === parent
       );
+      if (id === -1) {
+        return NaN;
+      } else {
+        return id;
+      }
     }
 
     function findAnswers(count) {
