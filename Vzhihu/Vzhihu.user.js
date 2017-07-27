@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知乎新版添加快捷键
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  为新版知乎添加快捷键
 // @author       You
 // @match        *://www.zhihu.com/*
@@ -192,19 +192,26 @@
       button.click();
     }
 
-    function hotkey()
+    function hotkey(event)
     {
-      if(window.event.altKey || window.event.ctrlKey) return;
+      if(event.altKey || event.ctrlKey) return;
 
-      if(window.event.key =='s') {
+      const element = event.target;
+      if(element.tagName === 'INPUT' || 
+        element.tagName === 'TEXTAREA' || 
+        element.className === 'public-DraftEditor-content'){
+        return;
+      }
+
+      if(event.key =='s') {
         scFlag = true;
-      } else if(window.event.key =='f') {
+      } else if(event.key =='f') {
         fxFlag = true;
-      } else if(scFlag && window.event.key=='c') {
+      } else if(scFlag && event.key=='c') {
         scFlag = fxFlag = false;
         collection();
         return;
-      } else if(fxFlag && window.event.key=='x') {
+      } else if(fxFlag && event.key=='x') {
         scFlag = fxFlag = false;
         share();
         return;
@@ -213,7 +220,7 @@
         scFlag = fxFlag = 0;
       }
 
-      switch (window.event.key) {
+      switch (event.key) {
         case 'j':
           nextItem();
           break;
