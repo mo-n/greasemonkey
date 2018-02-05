@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         知乎新版添加快捷键
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  为新版知乎添加快捷键
 // @author       You
 // @match        *://www.zhihu.com/*
-// @grant        none
+// @license      MIT
 // ==/UserScript==
 
 (function() {
@@ -14,7 +14,7 @@
     let gFlag = false, scFlag = false, fxFlag = false;
     const observer = new MutationObserver(setAnswersitems);
     let listItems;
-    let mainTag;
+    let mainTag; // 问题列表
     let answerClass;
     document.onkeydown = hotkey;
     // add hotkey event
@@ -29,7 +29,7 @@
       if(/^(http|https):\/\/www.zhihu.com(\/)?$/.test(window.location.href)) { // 匹配主页
         mainTag = document.querySelector('.TopstoryItem');
       } else if (/^(http|https):\/\/www.zhihu.com\/question\/(\d)+\/answer\/*/.test(window.location.href)) { //匹配单个问题页面
-        mainTag = document.querySelector('.Question-mainColumn');
+        mainTag = document.querySelector('.List-item');
       } else if(/^(http|https):\/\/www.zhihu.com\/question\/*/.test(window.location.href)) {
         mainTag = document.querySelector('.List-item').parentElement;
       }
@@ -39,7 +39,7 @@
 
     function setAnswersitems() {
       let items;
-      items = document.querySelectorAll(`.${answerClass}`);
+      items = document.querySelectorAll('.' + answerClass);
       if(!items) return -1;
       listItems = items;
     }
