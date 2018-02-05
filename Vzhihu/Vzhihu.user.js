@@ -27,7 +27,7 @@
         observer.disconnect();
       }
       if(/^(http|https):\/\/www.zhihu.com(\/)?$/.test(window.location.href)) { // 匹配主页
-        mainTag = document.querySelector('.TopstoryMain > div');
+        mainTag = document.querySelector('.TopstoryItem');
       } else if (/^(http|https):\/\/www.zhihu.com\/question\/(\d)+\/answer\/*/.test(window.location.href)) { //匹配单个问题页面
         mainTag = document.querySelector('.Question-mainColumn');
       } else if(/^(http|https):\/\/www.zhihu.com\/question\/*/.test(window.location.href)) {
@@ -55,7 +55,7 @@
         return 'TopstoryItem';
       }
       else if (/^(http|https):\/\/www.zhihu.com\/question\/*/.test(window.location.href)) { //匹配问题页面
-        return 'AnswerItem';
+        return 'List-item';
       }
     }
 
@@ -108,7 +108,7 @@
       }
       return actualTop;
 　　}
-
+    // 设置位置
     function setLocation(id) {
       let element = findAnswers(id);
       const elementTop = getElementTop(element);
