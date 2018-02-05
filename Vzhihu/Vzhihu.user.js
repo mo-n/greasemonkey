@@ -18,7 +18,7 @@
     let answerClass;
     document.onkeydown = hotkey;
     // add hotkey event
-    setInterval(addEvent, 500);
+    addEvent();
 
     function addEvent() {
       answerClass = getAnswerClass();
